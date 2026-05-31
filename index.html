@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+<meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+<!-- PWA 清单 & 主题色 -->
+<link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIumdoumDqOaVtOWuueiOi+i/mOWIhuaekCB2Ni4yIiwKICAic2hvcnRfbmFtZSI6ICLpnaLpg6jliIbmnpAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI2Y1ZjVmNSIsCiAgInRoZW1lX2NvbG9yIjogIiM0YTkwZDkiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWwsPHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48cmVjdCB3aWR0aD0nMTAwJyBoZWlnaHQ9JzEwMCcgZmlsbD0nIzRhOTBkOScvPjx0ZXh0IHg9JzUwJyB5PSc2MCcgZm9udC1zaXplPSc0MCcgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nd2hpdGUnPvCfk7c8L3RleHQ+PC9zdmc+IiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
+<meta name="theme-color" content="#4a90d9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="面部分析">
+<title>面部整容痕迹分析 v6.2</title>
+<style>
+  body{font-family:sans-serif;text-align:center;margin:0;padding:10px;background:#f5f5f5;}
+  #container{max-width:500px;margin:0 auto;background:#fff;border-radius:15px;padding:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+  canvas{width:100%;border-radius:10px;}
+  button{background:#4a90d9;color:white;border:none;padding:12px 25px;border-radius:25px;font-size:16px;margin:10px 5px;}
+  #result{text-align:left;background:#f9f9f9;padding:10px;border-radius:10px;font-size:14px;white-space:pre-wrap;display:none;}
+  #status{color:#888;margin:5px 0;}
+  .grade-box{font-weight:bold;text-align:center;padding:10px;border-radius:8px;margin:10px 0;font-size:18px;}
+  .confidence-tag{font-size:13px;padding:2px 8px;border-radius:4px;margin-left:10px;}
+  .beauty-warn{background:#ffecb3;color:#a68a00;padding:5px;border-radius:5px;margin:10px 0;}
+  .natural-tip{background:#d4edda;color:#155724;padding:5px;border-radius:5px;margin:10px 0;}
+</style>
+</head>
+<body>
+<div id="container">
+  <h2>📸 面部整容痕迹分析 v6.2</h2>
+  <p style="font-size:14px;">协调感优先 · 纹理加倍奖励 · 包容天然立体</p>
+  <input type="file" id="upload" accept="image/*" style="display:none;">
+  <button onclick="document.getElementById('upload').click()">选择照片</button>
+  <button id="retryBtn" style="display:none;" onclick="retryAnalysis()">重新分析</button>
+  <br><img id="preview" style="display:none;width:100%;max-height:300px;object-fit:contain;border-radius:10px;margin:10px 0;">
+  <canvas id="canvas" style="display:none;"></canvas>
+  <div id="status"></div>
+  <div id="result"></div>
+  <p style="font-size:11px;color:#aaa;margin-top:15px;">⚠️ 仅供娱乐参考，不能作为医学诊断依据</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+<script>
+const statusDiv = document.getElementById('status');
+const resultDiv = document.getElementById('result');
+const preview = document.getElementById('preview');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const retryBtn = document.getElementById('retryBtn');
+
+const faceMesh = new FaceMesh({locateFile: (file) => {
+  return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+}});
+faceMesh.setOptions({
+  maxNumFaces: 1,
+  refineLandmarks: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
+});
+faceMesh.onResults(onResults);
+
+let imgElement = null;
+let currentImageDataUrl = null;
+
+function preprocessImage(img) {
+  const offCanvas = document.createElement('canvas');
+  offCanvas.width = img.width; offCanvas.height = img.height;
+  offCanvas.getContext('2d').drawImage(img, 0, 0);
+  return offCanvas.toDataURL('image/jpeg', 0.95);
+}
+
+function startAnalysis(imageUrl) {
+  const tempImg = new Image();
+  tempImg.src = imageUrl;
+  tempImg.onload = function() {
+    const MAX_SIZE = 1200;
+    let w = tempImg.width, h = tempImg.height;
+    const processedDataUrl = preprocessImage(tempImg);
+    const scaledImg = new Image();
+    scaledImg.src = processedDataUrl;
+    scaledImg.onload = () => {
+      if (Math.max(w, h) > MAX_SIZE) {
+        const ratio = MAX_SIZE / Math.max(w, h);
+        w = Math.round(w * ratio); h = Math.round(h * ratio);
+        const scaleCanvas = document.createElement('canvas');
+        scaleCanvas.width = w; scaleCanvas.height = h;
+        scaleCanvas.getContext('2d').drawImage(scaledImg, 0, 0, w, h);
+        const finalUrl = scaleCanvas.toDataURL('image/jpeg', 0.9);
+        imgElement = new Image(); imgElement.src = finalUrl;
+        preview.src = finalUrl;
+      } else {
+        imgElement = scaledImg;
+        preview.src = processedDataUrl;
+      }
+      currentImageDataUrl = preview.src;
+      preview.style.display = 'block';
+      canvas.style.display = 'none';
+      resultDiv.style.display = 'none';
+      retryBtn.style.display = 'none';
+      statusDiv.textContent = '正在分析面部特征...';
+      if (imgElement.complete) faceMesh.send({image: imgElement});
+      else imgElement.onload = () => faceMesh.send({image: imgElement});
+    };
+  };
+}
+
+document.getElementById('upload').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = event => startAnalysis(event.target.result);
+  reader.readAsDataURL(file);
+});
+
+function retryAnalysis() {
+  if (currentImageDataUrl) startAnalysis(currentImageDataUrl);
+}
+
+// ---------- 工具函数 ----------
+const toPixel = (lm, w, h) => ({x: lm.x * w, y: lm.y * h});
+const distance = (a,b) => Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2);
+const angleBetween = (v1,v2) => {
+  const dot = v1.x*v2.x + v1.y*v2.y;
+  const m1 = Math.sqrt(v1.x**2+v1.y**2), m2 = Math.sqrt(v2.x**2+v2.y**2);
+  if (!m1||!m2) return 0;
+  return Math.acos(dot/(m1*m2)) * 180 / Math.PI;
+};
+const distToLine = (p,p1,p2) => {
+  const num = Math.abs((p2.y-p1.y)*p.x - (p2.x-p1.x)*p.y + p2.x*p1.y - p2.y*p1.x);
+  const den = Math.sqrt((p2.y-p1.y)**2 + (p2.x-p1.x)**2);
+  return den? num/den : 0;
+};
+const contourStraightness = (pts, p1, p2) => {
+  const ds = pts.map(p=>distToLine(p,p1,p2));
+  if(!ds.length) return 0;
+  const mean = ds.reduce((a,b)=>a+b,0)/ds.length;
+  return Math.sqrt(ds.reduce((a,b)=>a+(b-mean)**2,0)/ds.length);
+};
+function fuzzyScore(value, low, high, higherIsWorse = true) {
+  if (higherIsWorse) {
+    if (value <= low) return 0;
+    if (value >= high) return 1;
+    return (value - low) / (high - low);
+  } else {
+    if (value >= low) return 0;
+    if (value <= high) return 1;
+    return (low - value) / (low - high);
+  }
+}
+
+// ---------- 核心分析 ----------
+function onResults(results) {
+  statusDiv.textContent = '';
+  if (!results.multiFaceLandmarks?.length) {
+    statusDiv.textContent = '未检测到人脸。请使用正面清晰照片。';
+    retryBtn.style.display = 'inline-block';
+    return;
+  }
+  retryBtn.style.display = 'none';
+
+  const lm = results.multiFaceLandmarks[0];
+  const w = imgElement.width, h = imgElement.height;
+
+  // ========== 关键点提取 ==========
+  const hairline = toPixel(lm[10],w,h);
+  const glabella = toPixel(lm[6],w,h);
+  const nasion = toPixel(lm[168],w,h);
+  const noseTip = toPixel(lm[1],w,h);
+  const noseBottom = toPixel(lm[2],w,h);
+  const chin = toPixel(lm[152],w,h);
+  const Lface = toPixel(lm[234],w,h), Rface = toPixel(lm[454],w,h);
+  const LeyeOut = toPixel(lm[33],w,h), LeyeIn = toPixel(lm[133],w,h);
+  const ReyeIn = toPixel(lm[362],w,h), ReyeOut = toPixel(lm[263],w,h);
+  const Ljaw = toPixel(lm[172],w,h), Rjaw = toPixel(lm[397],w,h);
+  const upLip = toPixel(lm[13],w,h), lowLip = toPixel(lm[14],w,h);
+  const upLipTop = toPixel(lm[0],w,h), lowLipBot = toPixel(lm[17],w,h);
+  const Lcanthus = toPixel(lm[133],w,h), Rcanthus = toPixel(lm[362],w,h);
+  const LupperLid = toPixel(lm[159],w,h), LlowerLid = toPixel(lm[145],w,h);
+  const RupperLid = toPixel(lm[386],w,h), RlowerLid = toPixel(lm[374],w,h);
+  const Lbrow = toPixel(lm[105],w,h), Rbrow = toPixel(lm[334],w,h);
+  const Lmouth = toPixel(lm[61],w,h), Rmouth = toPixel(lm[291],w,h);
+  const Lalar = toPixel(lm[64],w,h), Ralar = toPixel(lm[294],w,h);
+  const mento = toPixel(lm[200],w,h);
+  const Lcheek = toPixel(lm[101],w,h), Rcheek = toPixel(lm[330],w,h);
+  const noseBridgeMid = {x:(nasion.x+noseTip.x)/2, y:(nasion.y+noseTip.y)/2};
+
+  // ========== 基础值 ==========
+  const faceH = Math.abs(hairline.y - chin.y);
+  const faceW = Math.abs(Rface.x - Lface.x);
+  const noseLen = distance(nasion, noseTip);
+  const smileW = distance(Lmouth,Rmouth);
+  const smileH = distance(upLipTop, lowLipBot);
+  const smileRatio = smileH? smileW/smileH : 0;
+  const isSmiling = smileRatio > 0.38;
+
+  const upRatio = (Math.abs(glabella.y-hairline.y)/faceH*100);
+  const midRatio = (Math.abs(noseBottom.y-glabella.y)/faceH*100);
+  const lowRatio = (Math.abs(chin.y-noseBottom.y)/faceH*100);
+  const LeyeW = Math.abs(LeyeOut.x-LeyeIn.x);
+  const ReyeW = Math.abs(ReyeOut.x-ReyeIn.x);
+  const eyeSpace = Math.abs(ReyeIn.x-LeyeIn.x);
+  const idealEye = faceW/5;
+
+  const nasoAngle = angleBetween(
+    {x:nasion.x-glabella.x,y:nasion.y-glabella.y},
+    {x:noseTip.x-nasion.x,y:noseTip.y-nasion.y}
+  );
+  const jawL = angleBetween(
+    {x:Ljaw.x-Lface.x,y:Ljaw.y-Lface.y},
+    {x:chin.x-Ljaw.x,y:chin.y-Ljaw.y}
+  );
+  const jawR = angleBetween(
+    {x:Rjaw.x-Rface.x,y:Rjaw.y-Rface.y},
+    {x:chin.x-Rjaw.x,y:chin.y-Rjaw.y}
+  );
+  const jawAvg = (jawL+jawR)/2;
+
+  const eUp = (distToLine(upLip,noseTip,chin)/faceH);
+  const eLow = (distToLine(lowLip,noseTip,chin)/faceH);
+
+  const LcanAngle = angleBetween(
+    {x:LupperLid.x-Lcanthus.x,y:LupperLid.y-Lcanthus.y},
+    {x:LlowerLid.x-Lcanthus.x,y:LlowerLid.y-Lcanthus.y}
+  );
+  const RcanAngle = angleBetween(
+    {x:RupperLid.x-Rcanthus.x,y:RupperLid.y-Rcanthus.y},
+    {x:RlowerLid.x-Rcanthus.x,y:RlowerLid.y-Rcanthus.y}
+  );
+  const canthusAvg = (LcanAngle+RcanAngle)/2;
+
+  const nasoBridge = angleBetween(
+    {x:nasion.x-glabella.x,y:nasion.y-glabella.y},
+    {x:noseBridgeMid.x-nasion.x,y:noseBridgeMid.y-nasion.y}
+  );
+
+  const jawContourL = Array.from({length:9},(_,i)=>toPixel(lm[i],w,h));
+  const chinContour = toPixel(lm[8],w,h);
+  const jawStraightL = contourStraightness(jawContourL, toPixel(lm[0],w,h), chinContour);
+  const jawContourR = Array.from({length:8},(_,i)=>toPixel(lm[i+9],w,h));
+  const jawStraightR = contourStraightness(jawContourR, toPixel(lm[16],w,h), chinContour);
+  const jawStraightAvg = (jawStraightL+jawStraightR)/2;
+
+  // ========== 精细指标 ==========
+  const nasolabial = angleBetween(
+    {x:noseBottom.x-noseTip.x,y:noseBottom.y-noseTip.y},
+    {x:upLip.x-noseBottom.x,y:upLip.y-noseBottom.y}
+  );
+  const LcanthalTilt = (Math.atan2(LeyeOut.y-LeyeIn.y, LeyeOut.x-LeyeIn.x)*180/Math.PI);
+  const RcanthalTilt = (Math.atan2(ReyeOut.y-ReyeIn.y, ReyeOut.x-ReyeIn.x)*180/Math.PI);
+  const alarW = distance(Lalar,Ralar);
+  const intercanthal = distance(Lcanthus,Rcanthus);
+  const alarRatio = intercanthal ? (alarW/intercanthal) : 1;
+  const philtrum = distance(noseBottom, upLipTop);
+  const upLipThick = distance(upLipTop, upLip);
+  const philtrumRatio = upLipThick ? (philtrum/upLipThick) : 1.8;
+  const noseProj = distToLine(noseTip, nasion, noseBottom);
+  const noseProjRatio = noseLen ? (noseProj/noseLen) : 0.6;
+  const labiomental = angleBetween(
+    {x:lowLip.x-mento.x,y:lowLip.y-mento.y},
+    {x:chin.x-mento.x,y:chin.y-mento.y}
+  );
+  const LcheekProj = distToLine(Lcheek, noseTip, chin)/faceH;
+  const RcheekProj = distToLine(Rcheek, noseTip, chin)/faceH;
+  const cheekProjAvg = (LcheekProj+RcheekProj)/2;
+
+  // ========== 不对称性 ==========
+  const asymEyebrow = Math.abs(Lbrow.y - Rbrow.y);
+  const asymMouth = Math.abs(Lmouth.y - Rmouth.y);
+  const asymAlar = Math.abs(Lalar.y - Ralar.y);
+  const asymCanthus = Math.abs(Lcanthus.y - Rcanthus.y);
+  const asymThres = faceH * 0.012;
+  const asymTotal = (asymEyebrow + asymMouth + asymAlar + asymCanthus) / 4;
+  const isNaturalAsymmetry = (asymTotal > 0.5 && asymTotal < 1.5);
+
+  // ========== 皮肤纹理 ==========
+  let skinTextureScore = null;
+  if (Lcheek && Rcheek) {
+    const regionSize = 20;
+    const regions = [Lcheek, Rcheek];
+    let totalVar = 0, vCnt = 0;
+    const offCanvas = document.createElement('canvas');
+    offCanvas.width = w; offCanvas.height = h;
+    const offCtx = offCanvas.getContext('2d');
+    offCtx.drawImage(imgElement,0,0,w,h);
+    regions.forEach(p => {
+      const x = Math.round(p.x - regionSize/2), y = Math.round(p.y - regionSize/2);
+      if(x<0||y<0||x+regionSize>w||y+regionSize>h) return;
+      const imgData = offCtx.getImageData(x,y,regionSize,regionSize);
+      const gray = [];
+      for(let i=0;i<imgData.data.length;i+=4){
+        gray.push(imgData.data[i]*0.299+imgData.data[i+1]*0.587+imgData.data[i+2]*0.114);
+      }
+      const mean = gray.reduce((a,b)=>a+b,0)/gray.length;
+      totalVar += gray.reduce((a,b)=>a+(b-mean)**2,0)/gray.length;
+      vCnt++;
+    });
+    if(vCnt) {
+      const varianceAvg = totalVar/vCnt;
+      skinTextureScore = Math.min(100, Math.max(0, (varianceAvg - 20) * 1.2));
+    }
+  }
+  const isTextureNatural = skinTextureScore !== null && skinTextureScore > 45;
+  const isTextureVeryNatural = skinTextureScore !== null && skinTextureScore > 65;
+
+  // ========== 美颜干扰度 ==========
+  const faceVScore = fuzzyScore(faceW / faceH, 0.75, 0.66, false);
+  const eyeToFace = (LeyeW + ReyeW) / faceW;
+  const eyeEnlargedScore = fuzzyScore(eyeToFace, 0.45, 0.55, true);
+  const blurScore = skinTextureScore !== null ? fuzzyScore(skinTextureScore, 30, 15, false) : 0;
+  const contourSharpness = fuzzyScore(jawStraightAvg, 5.5, 3.5, false);
+  const beautyDisturb = (faceVScore * 0.3 + eyeEnlargedScore * 0.25 + blurScore * 0.30 + contourSharpness * 0.15);
+
+  // ========== 模糊评分（阈值后移） ==========
+  const scores = {};
+  scores.nasoAngle = fuzzyScore(nasoAngle, 155, 165, true);
+  scores.labiomental = fuzzyScore(labiomental, 155, 165, true);
+  scores.noseProjRatio = fuzzyScore(noseProjRatio, 0.70, 0.80, true);
+  scores.canthusAvg = fuzzyScore(canthusAvg, 65, 75, true);
+  scores.alarRatioHigh = fuzzyScore(alarRatio, 1.15, 1.25, true);
+  scores.alarRatioLow = fuzzyScore(alarRatio, 0.90, 0.80, false);
+  scores.alarRatio = Math.max(scores.alarRatioHigh, scores.alarRatioLow);
+  scores.jawStraight = fuzzyScore(jawStraightAvg, 4.0, 3.0, false);
+  scores.jawAngle = fuzzyScore(jawAvg, 140, 150, true);
+
+  scores.nasolabial = Math.max(
+    fuzzyScore(nasolabial, 115, 125, true),
+    fuzzyScore(nasolabial, 85, 75, false)
+  );
+  scores.Eline = (!isSmiling) ? Math.max(
+    fuzzyScore(Math.abs(eUp), 0.020, 0.030, true),
+    fuzzyScore(Math.abs(eLow), 0.020, 0.030, true)
+  ) : 0;
+  scores.philtrumRatio = Math.max(
+    fuzzyScore(philtrumRatio, 1.4, 1.2, false),
+    fuzzyScore(philtrumRatio, 2.4, 2.6, true)
+  );
+  scores.cheekProj = fuzzyScore(cheekProjAvg, 0.18, 0.22, true);
+  scores.tiltDiff = fuzzyScore(Math.abs(LcanthalTilt - RcanthalTilt), 5, 8, true);
+  scores.jawAngleB = fuzzyScore(jawAvg, 135, 145, true);
+
+  const aScore = 
+    (scores.nasoAngle * 2 + scores.labiomental * 2 + scores.noseProjRatio * 2 +
+    scores.canthusAvg * 2 + scores.alarRatio * 1.5 + scores.jawStraight * 1.5 + scores.jawAngle * 1.5) * 0.8;
+  const bScore = 
+    scores.nasolabial * 1 + scores.Eline * 1 + scores.philtrumRatio * 1 +
+    scores.cheekProj * 1 + scores.tiltDiff * 1 + scores.jawAngleB * 0.5;
+  const asymScoreCont = (fuzzyScore(asymEyebrow, asymThres, asymThres*1.5, true) +
+    fuzzyScore(asymMouth, asymThres, asymThres*1.5, true) +
+    fuzzyScore(asymAlar, asymThres, asymThres*1.5, true) +
+    fuzzyScore(asymCanthus, asymThres, asymThres*1.5, true)) / 4;
+  let rawTotal = aScore + bScore + asymScoreCont * 1.5;
+
+  // ---------- 🌿 自然感证据 ----------
+  let naturalBonus = 0;
+  if (isTextureVeryNatural) naturalBonus += 3.0;
+  else if (isTextureNatural) naturalBonus += 2.0;
+  else if (skinTextureScore !== null && skinTextureScore > 30) naturalBonus += 0.8;
+  if (isNaturalAsymmetry) naturalBonus += 1.2;
+  const jawNaturalScore = fuzzyScore(jawStraightAvg, 3.5, 5.0, true);
+  naturalBonus += jawNaturalScore * 1.0;
+  if ((nasoAngle > 150 || labiomental > 150) && jawAvg < 140) {
+    naturalBonus += 1.5;
+  }
+  if (isSmiling) naturalBonus += 0.4;
+
+  if (asymTotal < 0.5 && !isTextureNatural) {
+    rawTotal += 0.3;
+  }
+
+  const effectiveNaturalBonus = naturalBonus * (1 - beautyDisturb * 0.5);
+  const finalScore = Math.max(0, rawTotal - effectiveNaturalBonus);
+
+  const baseHighThreshold = 5.5;
+  const effectiveHighThreshold = baseHighThreshold + beautyDisturb * 2.0;
+  let grade = '', gradeColor = '';
+  if (finalScore >= effectiveHighThreshold) {
+    grade = '🔴 高度整容脸';
+    gradeColor = '#d9534f';
+  } else if (finalScore >= 3.0) {
+    grade = '🟡 微整容脸';
+    gradeColor = '#f0ad4e';
+  } else if (finalScore >= 1.5) {
+    grade = '🔵 可疑人工痕迹';
+    gradeColor = '#5bc0de';
+  } else {
+    grade = '🟢 天然脸';
+    gradeColor = '#5cb85c';
+  }
+
+  const confidenceLevel = (beautyDisturb > 0.7) ? '低' :
+    (beautyDisturb > 0.4 || (finalScore > 2.2 && finalScore < 3.8)) ? '中' : '高';
+
+  let beautyWarning = '';
+  if (beautyDisturb > 0.6) beautyWarning = '⚠️ 重度美颜干扰，结果可信度低。';
+  else if (beautyDisturb > 0.3) beautyWarning = '🔍 存在一定美颜痕迹，结论仅供参考。';
+
+  let natureTip = '';
+  if (effectiveNaturalBonus > 2.0) {
+    natureTip = '🌿 面部保留显著天然特征，天然可能性很高。';
+  }
+
+  // ========== 绘制 ==========
+  canvas.width = w; canvas.height = h;
+  ctx.drawImage(imgElement,0,0,w,h);
+  const dp = (p,color='lime',r=3) => { ctx.beginPath(); ctx.arc(p.x,p.y,r,0,2*Math.PI); ctx.fillStyle=color; ctx.fill(); };
+  const dl = (p1,p2,color='cyan') => { ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.strokeStyle=color; ctx.lineWidth=2; ctx.stroke(); };
+  dp(hairline,'yellow');dp(glabella,'yellow');dp(noseBottom,'yellow');dp(chin,'yellow');dl(hairline,chin,'yellow');
+  dp(nasion,'red');dp(noseTip,'red');dp(Ljaw,'orange');dp(Rjaw,'orange');
+  dl(glabella,nasion,'white');dl(nasion,noseTip,'white');
+  dl(Lface,Ljaw,'orange');dl(Ljaw,chin,'orange');dl(noseTip,chin,'magenta');
+  dp(upLip,'cyan');dp(lowLip,'cyan');
+  dp(Lcanthus,'aqua');dp(Rcanthus,'aqua');
+  dp(mento,'violet',4);dl(lowLip,mento,'violet');dl(mento,chin,'violet');
+  canvas.style.display='block'; preview.style.display='none';
+
+  // ========== 报告 ==========
+  const confidenceTag = `<span class="confidence-tag" style="background:${confidenceLevel==='高'?'#d4edda':confidenceLevel==='中'?'#fff3cd':'#f8d7da'};color:${confidenceLevel==='高'?'#155724':confidenceLevel==='中'?'#856404':'#721c24'}">置信度: ${confidenceLevel}</span>`;
+  let report = `<div class="grade-box" style="background:${gradeColor}20;color:${gradeColor};">${grade} ${confidenceTag}</div>`;
+  if (beautyWarning) report += `<div class="beauty-warn">${beautyWarning}</div>`;
+  if (natureTip) report += `<div class="natural-tip">${natureTip}</div>`;
+  report += `【表情】${isSmiling?'😊微笑':'😐自然'} (唇比例${smileRatio.toFixed(3)})\n\n`;
+  report += `📐 基础比例\n三庭：上${upRatio.toFixed(1)}% 中${midRatio.toFixed(1)}% 下${lowRatio.toFixed(1)}%  五眼：左${LeyeW.toFixed(1)} 右${ReyeW.toFixed(1)} 眼距${eyeSpace.toFixed(1)}\n\n`;
+  report += `🦴 骨骼嫌疑 (阈值155°起)\n`;
+  report += `鼻额角 ${nasoAngle.toFixed(1)}° (${scores.nasoAngle.toFixed(2)})  颏唇沟 ${labiomental.toFixed(1)}° (${scores.labiomental.toFixed(2)})  鼻尖突度比 ${noseProjRatio.toFixed(2)}\n`;
+  report += `内眼角 ${canthusAvg.toFixed(1)}°  鼻翼比 ${alarRatio.toFixed(2)}  下颌角 ${jawAvg.toFixed(1)}°  下颌平滑 ${jawStraightAvg.toFixed(1)}px\n\n`;
+  report += `🌿 自然感证据\n纹理: ${skinTextureScore!==null?skinTextureScore.toFixed(0)+'/100':'无'} (${isTextureVeryNatural?'极自然':isTextureNatural?'自然':'平滑'})\n`;
+  report += `不对称: ${asymTotal.toFixed(1)}px (${isNaturalAsymmetry?'天然轻微':'对称'})\n`;
+  report += `骨相协调奖励: ${(nasoAngle>150||labiomental>150)&&jawAvg<140?'是 (立体天然)':'无'}\n`;
+  report += `自然奖励总分: ${effectiveNaturalBonus.toFixed(1)}\n\n`;
+  report += `🎭 美颜干扰度: ${(beautyDisturb*100).toFixed(0)}%\n`;
+  report += `⚖️ 原始嫌疑: ${rawTotal.toFixed(1)} - 自然抵扣 ${effectiveNaturalBonus.toFixed(1)} = 最终分 ${finalScore.toFixed(1)} (高整门槛 ${effectiveHighThreshold.toFixed(1)})\n`;
+  report += `\n⚠️ 仅供娱乐参考。`;
+
+  resultDiv.innerHTML = report;
+  resultDiv.style.display = 'block';
+}
+</script>
+<!-- 注册基础 Service Worker，实现离线缓存及安装支持 -->
+<script>
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE_NAME = 'face-analysis-v6.2';
+    const urlsToCache = [
+      '/',
+      'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js'
+    ];
+    self.addEventListener('install', event => {
+      event.waitUntil(
+        caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+      );
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', event => {
+      event.waitUntil(clients.claim());
+    });
+    self.addEventListener('fetch', event => {
+      event.respondWith(
+        caches.match(event.request).then(response => response || fetch(event.request))
+      );
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl, { scope: '/' })
+    .catch(() => console.log('SW registration for PWA prompt failed, but app still works.'));
+}
+</script>
+</body>
+</html>
