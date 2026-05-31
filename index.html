@@ -3,467 +3,489 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
-<meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
-<!-- PWA 清单 & 主题色 -->
-<link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIumdoumDqOaVtOWuueiOi+i/mOWIhuaekCB2Ni4yIiwKICAic2hvcnRfbmFtZSI6ICLpnaLpg6jliIbmnpAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI2Y1ZjVmNSIsCiAgInRoZW1lX2NvbG9yIjogIiM0YTkwZDkiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWwsPHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48cmVjdCB3aWR0aD0nMTAwJyBoZWlnaHQ9JzEwMCcgZmlsbD0nIzRhOTBkOScvPjx0ZXh0IHg9JzUwJyB5PSc2MCcgZm9udC1zaXplPSc0MCcgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nd2hpdGUnPvCfk7c8L3RleHQ+PC9zdmc+IiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
-<meta name="theme-color" content="#4a90d9">
+<link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuaMkemAieWKqeaJiyAtIOiQnOe7iOadkOW5s+ihjCIsCiAgInNob3J0X25hbWUiOiAi5oOR6I+cIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmZmYiLAogICJ0aGVtZV9jb2xvciI6ICIjZjU5ZTBiIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLDxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMTAwIDEwMCc+PHRleHQgeD0nNTAnIHk9JzYwJyBmb250LXNpemU9JzQwJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBmaWxsPScjZjU5ZTBiJz7wn5KwPC90ZXh0Pjwvc3ZnPiIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0KICBdCn0=">
+<meta name="theme-color" content="#f59e0b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="面部分析">
-<title>面部整容痕迹分析 v6.2</title>
+<meta name="apple-mobile-web-app-title" content="挑菜避坑">
+<title>挑菜助手 · 收藏版</title>
 <style>
-  body{font-family:sans-serif;text-align:center;margin:0;padding:10px;background:#f5f5f5;}
-  #container{max-width:500px;margin:0 auto;background:#fff;border-radius:15px;padding:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);}
-  canvas{width:100%;border-radius:10px;}
-  button{background:#4a90d9;color:white;border:none;padding:12px 25px;border-radius:25px;font-size:16px;margin:10px 5px;}
-  #result{text-align:left;background:#f9f9f9;padding:10px;border-radius:10px;font-size:14px;white-space:pre-wrap;display:none;}
-  #status{color:#888;margin:5px 0;}
-  .grade-box{font-weight:bold;text-align:center;padding:10px;border-radius:8px;margin:10px 0;font-size:18px;}
-  .confidence-tag{font-size:13px;padding:2px 8px;border-radius:4px;margin-left:10px;}
-  .beauty-warn{background:#ffecb3;color:#a68a00;padding:5px;border-radius:5px;margin:10px 0;}
-  .natural-tip{background:#d4edda;color:#155724;padding:5px;border-radius:5px;margin:10px 0;}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #fefefe;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+  #app {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 180px;
+  }
+  h1 { text-align: center; font-size: 1.4rem; color: #333; }
+  #searchBox {
+    width: 100%;
+    padding: 10px 16px;
+    border: 2px solid #f0e0c0;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    outline: none;
+    background: #fff;
+    color: #333;
+    transition: border-color 0.3s;
+  }
+  #searchBox:focus { border-color: #f59e0b; }
+
+  .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+  .tab {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: #fef0d5;
+    color: #92400e;
+    font-size: 0.85rem;
+    font-weight: bold;
+    white-space: nowrap;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+  }
+  .tab.active { background: #f59e0b; color: white; }
+  .tab.fav-tab { background: #fff3cd; color: #856404; }
+  .tab.fav-tab.active { background: #ffc107; color: white; }
+
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px 15px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    cursor: pointer;
+    transition: background 0.15s;
+    border: 1px solid #f5f5f5;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .card-content { flex: 1; cursor: pointer; }
+  .card-title {
+    font-weight: bold; font-size: 1rem; color: #333;
+    display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+  }
+  .card-tips { margin-top: 8px; font-size: 0.85rem; color: #666; line-height: 1.6; display: none; }
+  .card.open .card-tips { display: block; }
+  .warning-box { margin-top: 8px; background: #fff5f5; border-radius: 10px; padding: 10px; font-size: 0.85rem; color: #b91c1c; line-height: 1.6; display: none; }
+  .card.open .warning-box { display: block; }
+
+  .card-actions { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-left: 8px; }
+  .fav-btn {
+    background: none; border: none; font-size: 1.4rem; cursor: pointer;
+    line-height: 1; padding: 0; transition: transform 0.2s;
+  }
+  .fav-btn.faved { color: #f59e0b; transform: scale(1.2); }
+  .add-btn {
+    background: #f59e0b; color: white; border: none; border-radius: 50%;
+    width: 32px; height: 32px; font-size: 1.2rem; font-weight: bold;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: background 0.2s;
+  }
+  .add-btn:active { background: #d97706; }
+
+  .season-badge { display: inline-block; background: #e6f7e6; color: #2d6a4f; font-size: 0.7rem; padding: 2px 7px; border-radius: 12px; font-weight: normal; }
+  .off-season-badge { display: inline-block; background: #fff3e0; color: #e65100; font-size: 0.7rem; padding: 2px 7px; border-radius: 12px; font-weight: normal; }
+  .warn-badge { display: inline-block; background: #fecaca; color: #991b1b; font-size: 0.7rem; padding: 2px 7px; border-radius: 12px; font-weight: bold; }
+
+  #basket {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px; background: #fff;
+    border-top: 1px solid #f0e0c0; box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+    padding: 10px 15px 15px; z-index: 10; border-radius: 20px 20px 0 0;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  #basket.hidden { display: none; }
+  .basket-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .basket-items { display: flex; flex-wrap: wrap; gap: 6px; max-height: 80px; overflow-y: auto; }
+  .basket-item { background: #fef0d5; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; }
+  .basket-item .remove { background: none; border: none; color: #b91c1c; font-weight: bold; cursor: pointer; font-size: 1rem; line-height: 1; }
+  .balance-tip { font-size: 0.8rem; color: #166534; background: #f0fdf4; border-radius: 8px; padding: 6px 10px; }
+  .budget-toggle {
+    font-size: 0.8rem; color: #92400e; background: #fef9f0;
+    border-radius: 8px; padding: 6px 10px; cursor: pointer; text-align: center;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .budget-details {
+    font-size: 0.75rem; color: #6b7280; background: #f9fafb;
+    border-radius: 8px; padding: 8px 10px; display: none;
+  }
+  .budget-details.open { display: block; }
+  .budget-row { display: flex; justify-content: space-between; padding: 2px 0; }
+  .budget-total { font-weight: bold; color: #b45309; }
 </style>
 </head>
 <body>
-<div id="container">
-  <h2>📸 面部整容痕迹分析 v6.2</h2>
-  <p style="font-size:14px;">协调感优先 · 纹理加倍奖励 · 包容天然立体</p>
-  <input type="file" id="upload" accept="image/*" style="display:none;">
-  <button onclick="document.getElementById('upload').click()">选择照片</button>
-  <button id="retryBtn" style="display:none;" onclick="retryAnalysis()">重新分析</button>
-  <br><img id="preview" style="display:none;width:100%;max-height:300px;object-fit:contain;border-radius:10px;margin:10px 0;">
-  <canvas id="canvas" style="display:none;"></canvas>
-  <div id="status"></div>
-  <div id="result"></div>
-  <p style="font-size:11px;color:#aaa;margin-top:15px;">⚠️ 仅供娱乐参考，不能作为医学诊断依据</p>
+<div id="app">
+  <h1>🥗 挑菜助手 · 收藏版</h1>
+  <div style="background:#f0fdf4;border-radius:12px;padding:12px;font-size:0.8rem;color:#166534;text-align:center;">
+    💡 点 ⭐ 收藏常用食材 · 一键查看 · 底部查看每周采购花费
+  </div>
+
+  <input type="text" id="searchBox" placeholder="🔍 搜索食材" autocomplete="off">
+  <div class="tabs" id="tabs"></div>
+  <div class="list" id="list"></div>
+
+  <div id="basket" class="hidden">
+    <div class="basket-header" id="basketToggle">
+      <span>🧺 我的菜篮子 (<span id="basketCount">0</span>)</span>
+      <button id="clearBasket" style="background:none;border:none;color:#b91c1c;cursor:pointer;">清空</button>
+    </div>
+    <div class="basket-items" id="basketItems"></div>
+    <div class="balance-tip" id="balanceTip"></div>
+    <div class="budget-toggle" id="budgetToggle">
+      <span>💰 每周采购参考（约 <span id="totalBudget">119</span> 元）</span>
+      <span>▼</span>
+    </div>
+    <div class="budget-details" id="budgetDetails">
+      <div class="budget-row"><span>🥬 蔬菜 (4-5斤)</span><span>约 35 元</span></div>
+      <div class="budget-row"><span>🍗 肉蛋 (1.5-2斤)</span><span>约 52 元</span></div>
+      <div class="budget-row"><span>🍎 水果 (2-3斤)</span><span>约 15 元</span></div>
+      <div class="budget-row"><span>🌾 谷物 (2-3斤)</span><span>约 15 元</span></div>
+      <div class="budget-row"><span>🧂 调味品 (分摊每周)</span><span>约 2 元</span></div>
+      <div class="budget-row budget-total"><span>合计 (两人份)</span><span>约 119 元/周</span></div>
+      <div style="margin-top:4px;color:#999;font-size:0.7rem;">人均约 8.5 元/天 · 调味建议使用天然葱姜蒜</div>
+    </div>
+  </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 <script>
-const statusDiv = document.getElementById('status');
-const resultDiv = document.getElementById('result');
-const preview = document.getElementById('preview');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const retryBtn = document.getElementById('retryBtn');
-
-const faceMesh = new FaceMesh({locateFile: (file) => {
-  return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-}});
-faceMesh.setOptions({
-  maxNumFaces: 1,
-  refineLandmarks: true,
-  minDetectionConfidence: 0.5,
-  minTrackingConfidence: 0.5
-});
-faceMesh.onResults(onResults);
-
-let imgElement = null;
-let currentImageDataUrl = null;
-
-function preprocessImage(img) {
-  const offCanvas = document.createElement('canvas');
-  offCanvas.width = img.width; offCanvas.height = img.height;
-  offCanvas.getContext('2d').drawImage(img, 0, 0);
-  return offCanvas.toDataURL('image/jpeg', 0.95);
-}
-
-function startAnalysis(imageUrl) {
-  const tempImg = new Image();
-  tempImg.src = imageUrl;
-  tempImg.onload = function() {
-    const MAX_SIZE = 1200;
-    let w = tempImg.width, h = tempImg.height;
-    const processedDataUrl = preprocessImage(tempImg);
-    const scaledImg = new Image();
-    scaledImg.src = processedDataUrl;
-    scaledImg.onload = () => {
-      if (Math.max(w, h) > MAX_SIZE) {
-        const ratio = MAX_SIZE / Math.max(w, h);
-        w = Math.round(w * ratio); h = Math.round(h * ratio);
-        const scaleCanvas = document.createElement('canvas');
-        scaleCanvas.width = w; scaleCanvas.height = h;
-        scaleCanvas.getContext('2d').drawImage(scaledImg, 0, 0, w, h);
-        const finalUrl = scaleCanvas.toDataURL('image/jpeg', 0.9);
-        imgElement = new Image(); imgElement.src = finalUrl;
-        preview.src = finalUrl;
-      } else {
-        imgElement = scaledImg;
-        preview.src = processedDataUrl;
-      }
-      currentImageDataUrl = preview.src;
-      preview.style.display = 'block';
-      canvas.style.display = 'none';
-      resultDiv.style.display = 'none';
-      retryBtn.style.display = 'none';
-      statusDiv.textContent = '正在分析面部特征...';
-      if (imgElement.complete) faceMesh.send({image: imgElement});
-      else imgElement.onload = () => faceMesh.send({image: imgElement});
-    };
+  const data = {
+    "蔬菜": [
+      { name: "西红柿", category:"蔬菜", season: [5,6,7,8,9,10], tips: "鲜红有弹性，闻有清香气。熟吃番茄红素吸收更好。" },
+      { name: "黄瓜", category:"蔬菜", season: [5,6,7,8,9], tips: "硬挺刺粒明显，蒂部带花。过于直的警惕激素。", highRisk: true, warnTips: "⚠️ 激素黄瓜：花瓣鲜艳、花蒂膨大如瘤，最好别买。" },
+      { name: "空心菜", category:"蔬菜", season: [4,5,6,7,8,9,10], tips: "茎秆细嫩、叶片翠绿，掐茎易断为嫩。" },
+      { name: "菜心", category:"蔬菜", season: [10,11,12,1,2,3], tips: "茎短嫩，花蕾未开。白灼最佳。" },
+      { name: "芥蓝", category:"蔬菜", season: [10,11,12,1,2], tips: "茎粗壮适中，粉白均匀。" },
+      { name: "苋菜", category:"蔬菜", season: [5,6,7,8,9], tips: "叶片紫红或绿，嫩脆。汤汁红色正常。" },
+      { name: "莲藕", category:"蔬菜", season: [8,9,10,11,12,1,2], tips: "藕节短粗，孔洞干净。太白的可能漂白。" },
+      { name: "丝瓜", category:"蔬菜", season: [5,6,7,8,9], tips: "表皮翠绿，棱角清晰，按压坚实。" },
+      { name: "苦瓜", category:"蔬菜", season: [5,6,7,8,9], tips: "瘤状突起饱满，颜色翠绿。发黄则过熟。" },
+      { name: "冬瓜", category:"蔬菜", season: [6,7,8,9], tips: "外皮深绿有白霜，肉质洁白紧实。" },
+      { name: "秋葵", category:"蔬菜", season: [6,7,8,9], tips: "颜色鲜绿，5-10厘米最嫩。" },
+      { name: "豌豆苗", category:"蔬菜", season: [3,4,5,6], tips: "茎叶嫩绿，无黄叶。" },
+      { name: "番薯叶", category:"蔬菜", season: [5,6,7,8,9,10], tips: "叶片嫩绿，尖部最嫩。" },
+      { name: "西兰花", category:"蔬菜", season: [9,10,11,12,1,2], tips: "花球紧密深绿，切口新鲜。" },
+      { name: "菠菜", category:"蔬菜", season: [10,11,12,1,2,3], tips: "叶片深绿肥厚，根部红色。草酸高，焯水后烹调。" },
+      { name: "胡萝卜", category:"蔬菜", season: [10,11,12,1,2,3], tips: "表皮光滑橙红，顶部绿叶新鲜。" },
+      { name: "辣椒", category:"蔬菜", season: [5,6,7,8,9,10], tips: "光滑有光泽，硬挺。过于光亮可能打蜡。", highRisk: true, warnTips: "⚠️ 农残风险：流水搓洗或盐水浸泡。" },
+      { name: "生菜", category:"蔬菜", season: [3,4,5,9,10,11], tips: "叶片挺立翠绿，根部切口新鲜。" },
+      { name: "洋葱", category:"蔬菜", season: [5,6,7,8,9,10], tips: "外皮干燥完整，坚硬无发芽。" },
+      { name: "土豆", category:"蔬菜", season: [5,6,7,8,9], tips: "无绿皮无发芽，表面光滑。避光储存。" },
+      { name: "蘑菇", category:"蔬菜", season: [9,10,11,12,1,2], tips: "菌盖完整，干爽无黏液。" },
+      { name: "大白菜", category:"蔬菜", season: [10,11,12,1,2], tips: "结球紧实，叶片白嫩，无黑斑。" },
+      { name: "韭菜", category:"蔬菜", season: [3,4,5,9,10], tips: "叶片翠绿挺直，根部白色部分多。" },
+      { name: "芹菜", category:"蔬菜", season: [1,2,3,4,9,10,11,12], tips: "茎秆挺直，折断脆响。老芹菜纤维粗。" },
+      { name: "竹笋", category:"蔬菜", season: [3,4,5], tips: "根部切口新鲜，笋壳紧包。发黄变软则不新鲜。" },
+      { name: "山药", category:"蔬菜", season: [10,11,12,1,2], tips: "表皮无黑斑，须根多，折断后黏液浓稠。" },
+      { name: "芋头", category:"蔬菜", season: [9,10,11,12], tips: "表皮完整，手感沉，切开后肉质细白。" },
+      { name: "豆角", category:"蔬菜", season: [5,6,7,8,9], tips: "颜色嫩绿，豆荚饱满，折之脆断。无虫眼。" },
+      { name: "茄子", category:"蔬菜", season: [6,7,8,9], tips: "表皮紫亮有光泽，蒂部白色部分越多越嫩。" },
+      { name: "南瓜", category:"蔬菜", season: [8,9,10,11,12], tips: "表皮坚硬，蒂部干燥，拍声音沉闷。切开后籽饱肉黄。" },
+      { name: "包菜", category:"蔬菜", season: [10,11,12,1,2], tips: "结球紧实，外层叶片翠绿。掂着重，无黑心。" },
+      { name: "花菜", category:"蔬菜", season: [9,10,11,12,1,2], tips: "花球洁白紧密，无散球。绿花菜同理。" },
+      { name: "白萝卜", category:"蔬菜", season: [11,12,1,2], tips: "根形端正，须根少，掂着重。无空心或黑心。" },
+      { name: "油麦菜", category:"蔬菜", season: [1,2,3,4,9,10,11,12], tips: "叶片翠绿挺立，根部切口新鲜。口感清脆。" },
+      { name: "茼蒿", category:"蔬菜", season: [9,10,11,12,1,2], tips: "叶片嫩绿，茎短，有特殊清香。无黄叶。" },
+      { name: "小白菜", category:"蔬菜", season: [9,10,11,12,1,2,3], tips: "叶片翠绿完整，茎部嫩白，无虫眼。" },
+      { name: "四季豆", category:"蔬菜", season: [5,6,7,8], tips: "豆荚饱满，颜色翠绿，掐断脆响。没筋的品种更好。" },
+      { name: "豇豆", category:"蔬菜", season: [6,7,8,9], tips: "细长均匀，颜色深绿，豆粒不明显。软趴趴的不新鲜。" },
+      { name: "金针菇", category:"蔬菜", season: [9,10,11,12,1,2], tips: "菌柄洁白，菌盖小，干爽不黏。根部发黄已老化。" },
+      { name: "西芹", category:"蔬菜", season: [1,2,3,4,9,10,11,12], tips: "茎秆宽厚，颜色翠绿，折断脆响。老芹菜纤维多。" }
+    ],
+    "水果": [
+      { name: "荔枝", category:"水果", season: [5,6,7], tips: "外壳鲜红或暗红，缝合线明显。黑壳或流汁已变质。" },
+      { name: "龙眼", category:"水果", season: [7,8,9], tips: "外壳黄褐粗糙，紧实。剥开果肉半透明。" },
+      { name: "芒果", category:"水果", season: [5,6,7,8], tips: "光滑有光泽，黄中带红，轻按微软。" },
+      { name: "菠萝", category:"水果", season: [4,5,6,7], tips: "外皮金黄，叶片挺立，底座偏软。盐水泡后吃。" },
+      { name: "木瓜", category:"水果", season: [6,7,8,9], tips: "表皮橙黄，轻按软而不烂。" },
+      { name: "番石榴", category:"水果", season: [6,7,8,9], tips: "绿中带黄，有果粉。籽多肉厚。" },
+      { name: "杨桃", category:"水果", season: [8,9,10], tips: "果棱饱满，黄绿，无黑斑。肾病患者慎食。" },
+      { name: "黄皮", category:"水果", season: [6,7,8], tips: "果皮金黄至淡褐，果实饱满成串。" },
+      { name: "火龙果", category:"水果", season: [5,6,7,8,9,10], tips: "鳞片翠绿，按压有弹性。" },
+      { name: "百香果", category:"水果", season: [6,7,8,9], tips: "外壳紫红或黄，稍微变皱更甜。" },
+      { name: "释迦", category:"水果", season: [8,9,10,11], tips: "果皮黄绿，鳞目平整。硬果放几天后熟。" },
+      { name: "莲雾", category:"水果", season: [5,6,7], tips: "颜色深红，果体饱满，底部展开。" },
+      { name: "苹果", category:"水果", season: [9,10,11,12,1,2], tips: "表皮天然果蜡，手感沉。连皮吃纤维多。" },
+      { name: "香蕉", category:"水果", season: [8,9,10,11], tips: "金黄带小黑点，柄部青绿。" },
+      { name: "橙子", category:"水果", season: [11,12,1,2,3], tips: "表皮细腻有光泽，手感沉。吃完整水果非果汁。" },
+      { name: "草莓", category:"水果", season: [12,1,2,3,4], tips: "鲜红有光泽，籽金黄，香气浓。", highRisk: true, warnTips: "⚠️ 农残高风险：流水冲洗，不要只泡。" },
+      { name: "柚子", category:"水果", season: [10,11,12,1,2], tips: "表皮光滑，手感沉，按压有弹性。" },
+      { name: "猕猴桃", category:"水果", season: [9,10,11,12,1], tips: "表皮绒毛均匀，轻按微软。硬果催熟后可食。" },
+      { name: "樱桃", category:"水果", season: [5,6], tips: "果柄翠绿，果体饱满，颜色深红。" },
+      { name: "梨", category:"水果", season: [8,9,10,11,12], tips: "表皮光滑，颜色黄褐或青绿，手感沉。底部凹陷深。" },
+      { name: "桃子", category:"水果", season: [6,7,8], tips: "绒毛均匀，黄中透红，轻捏稍软，香气明显。" },
+      { name: "李子", category:"水果", season: [6,7,8], tips: "颜色深紫或红，果粉均匀，轻按有弹性。" },
+      { name: "西瓜", category:"水果", season: [6,7,8], tips: "拍声清脆，底部黄斑较大，藤蔓干枯。" },
+      { name: "哈密瓜", category:"水果", season: [6,7,8,9], tips: "表皮网纹均匀，底部按压稍软。闻着有香甜味。" },
+      { name: "榴莲", category:"水果", season: [5,6,7,8], tips: "外壳金黄，刺粗大而稀疏，摇晃有轻微晃动感。开口过大可能过熟。" },
+      { name: "山竹", category:"水果", season: [6,7,8], tips: "外壳紫黑，果蒂翠绿，轻捏外壳有弹性。外壳硬可能变质。" }
+    ],
+    "蛋白质": [
+      { name: "鸡蛋", category:"蛋白质", season: [], tips: "蛋壳粗糙有光泽，摇晃无响声。沉水为新鲜。" },
+      { name: "鸡胸肉", category:"蛋白质", season: [], tips: "颜色粉嫩有弹性，无腥味，表面不黏手。" },
+      { name: "猪肉", category:"蛋白质", season: [], tips: "淡红脂肪洁白，指压回弹好。留意检疫印章。", highRisk: true, warnTips: "⚠️ 病死猪/注水肉：暗红淤血、腥臭、脂肪粉色。注水肉指压出水。正规渠道购买。" },
+      { name: "牛腱子", category:"蛋白质", season: [], tips: "深红纹理清晰，脂肪淡黄，适合慢炖。" },
+      { name: "三文鱼", category:"蛋白质", season: [], tips: "鱼肉橘红纹理分明，无腥臭味，按压有弹性。" },
+      { name: "虾仁", category:"蛋白质", season: [4,5,6,7,8,9], tips: "虾身弯曲紧实，壳亮有光泽，无黑头。" },
+      { name: "豆腐", category:"蛋白质", season: [], tips: "洁白有弹性，无酸味。石膏豆腐含钙高。" },
+      { name: "鸭肉", category:"蛋白质", season: [], tips: "表皮淡黄有光泽，肉质紧实，无异味。" },
+      { name: "羊肉", category:"蛋白质", season: [10,11,12,1,2], tips: "颜色深红，脂肪洁白，有淡淡的膻味。冬季温补。" },
+      { name: "蛤蜊", category:"蛋白质", season: [5,6,7,8,9], tips: "贝壳紧闭，相互敲击声音清脆。吐沙后烹饪。" },
+      { name: "排骨", category:"蛋白质", season: [], tips: "骨头断口鲜红，肉质紧实，有肉香。注水排骨松垮。" },
+      { name: "五花肉", category:"蛋白质", season: [], tips: "肥瘦相间层次分明，颜色鲜红，脂肪洁白。过肥或瘦肉松散不佳。" },
+      { name: "鸡腿", category:"蛋白质", season: [], tips: "表皮淡黄，毛孔均匀，肉质紧实有弹性。无淤血。" },
+      { name: "鲫鱼", category:"蛋白质", season: [], tips: "鱼眼凸起明亮，鱼鳞紧贴，鱼鳃鲜红。活鱼现杀最鲜。" },
+      { name: "生蚝", category:"蛋白质", season: [10,11,12,1,2,3], tips: "外壳紧闭，拿在手里沉甸甸。开口不合、有腥臭味勿买。" },
+      { name: "豆浆", category:"蛋白质", season: [], tips: "选择配料只有大豆和水，无糖或少糖。当天饮用最佳。" }
+    ],
+    "主食/谷物": [
+      { name: "糙米", category:"主食/谷物", season: [], tips: "颗粒饱满，颜色均匀，闻有米香。两人份：白米240ml配本品约120ml（1:1），提前浸泡2小时，水量多加1格。" },
+      { name: "黑米", category:"主食/谷物", season: [], tips: "颜色深黑，天然米香。两人份：白米240ml配本品60-120ml（½-1杯），提前浸泡2小时，水量多加1格。" },
+      { name: "小米", category:"主食/谷物", season: [], tips: "颗粒小均匀，颜色金黄，养胃。两人份：白米240ml配本品40-60ml（⅓-½杯），不用浸泡，正常水量。" },
+      { name: "藜麦", category:"主食/谷物", season: [], tips: "颗粒小，颜色白或红，完全蛋白。两人份：白米240ml配本品60ml（½杯），不用浸泡，正常水量。" },
+      { name: "燕麦米", category:"主食/谷物", season: [], tips: "选整粒或钢切，配料只有燕麦。两人份：白米240ml配本品60ml（½杯），提前浸泡1小时，水量多加½格。" },
+      { name: "荞麦米", category:"主食/谷物", season: [], tips: "颗粒小，颜色深褐，清香。两人份：白米240ml配本品60ml（½杯），不用浸泡，正常水量。" },
+      { name: "高粱米", category:"主食/谷物", season: [], tips: "颗粒圆润，颜色红褐。两人份：白米240ml配本品60ml（½杯），提前浸泡2小时，水量多加1格。" },
+      { name: "薏米", category:"主食/谷物", season: [], tips: "颗粒完整，颜色乳白，祛湿。两人份：白米240ml配本品40-60ml（⅓-½杯），提前浸泡2小时，水量多加1格。" },
+      { name: "青稞米", category:"主食/谷物", season: [], tips: "颗粒饱满，颜色深紫，高纤维。两人份：白米240ml配本品60ml（½杯），提前浸泡4小时，水量多加1格。" },
+      { name: "红豆", category:"主食/谷物", season: [], tips: "深红饱满，补气血。两人份：白米240ml配本品40-60ml（⅓-½杯），提前浸泡4小时，水量多加1格。" },
+      { name: "绿豆", category:"主食/谷物", season: [], tips: "颗粒饱满，颜色鲜绿，清热。两人份：白米240ml配本品40-60ml（⅓-½杯），提前浸泡1小时，水量多加1格。" },
+      { name: "黄豆", category:"主食/谷物", season: [], tips: "颗粒饱满均匀，颜色淡黄。两人份：白米240ml配本品约30ml（¼杯），提前浸泡4小时，水量多加1格。" },
+      { name: "赤小豆", category:"主食/谷物", season: [], tips: "比红豆细长，祛湿效果好。两人份：白米240ml配本品40-60ml（⅓-½杯），提前浸泡4小时，水量多加1格。" },
+      { name: "鹰嘴豆", category:"主食/谷物", season: [], tips: "颗粒饱满，颜色淡黄，粉糯。两人份：白米240ml配本品60ml（½杯），提前浸泡8小时，水量多加1格。" },
+      { name: "玉米碴", category:"主食/谷物", season: [], tips: "干玉米磨成小颗粒。两人份：白米240ml配本品60ml（½杯），提前浸泡2小时，水量多加½格。" },
+      { name: "干玉米粒", category:"主食/谷物", season: [], tips: "整粒干燥玉米。两人份：白米240ml配本品40-60ml（⅓-½杯），提前浸泡4小时，水量多加1格。" },
+      { name: "全麦面包", category:"主食/谷物", season: [], tips: "配料第一位是全麦粉，粗硬麦香浓。直接食用，无需煮饭。" },
+      { name: "红薯", category:"主食/谷物", season: [9,10,11,12], tips: "表皮光滑无黑斑，手感沉。两人份：切块与米同煮，约拳头大小，水量稍多。" },
+      { name: "紫薯", category:"主食/谷物", season: [9,10,11,12], tips: "表皮光滑，颜色深紫。两人份：切块与米同煮，约拳头大小，水量稍多。" }
+    ],
+    "调味品": [
+      { name: "大蒜", category:"调味品", season: [], tips: "蒜头坚硬饱满，外皮干燥，无发芽或软烂。每周约用1头。" },
+      { name: "生姜", category:"调味品", season: [], tips: "表皮淡黄，无皱缩或发霉。每次买一小块（约100克），用完再买。" },
+      { name: "小葱", category:"调味品", season: [], tips: "叶片翠绿挺直，根部白色饱满。用多少买多少，冷藏可保鲜3天。" },
+      { name: "干辣椒", category:"调味品", season: [], tips: "颜色鲜红或暗红，完整不碎，有辣椒香。密封阴凉存放，每次买50克用很久。" },
+      { name: "花椒", category:"调味品", season: [], tips: "颜色红褐，开口饱满，麻味浓。密封阴凉存放，每次买50克可用数月。" },
+      { name: "盐", category:"调味品", season: [], tips: "买加碘盐，颗粒均匀无结块。一袋500克两人可用2-3个月。" },
+      { name: "酱油", category:"调味品", season: [], tips: "配料表只有水、大豆、小麦、盐的酿造酱油。开封后冷藏保存。", highRisk: true, warnTips: "⚠️ 化学酱油：配料含焦糖色、防腐剂、味精等添加剂的尽量不选。" },
+      { name: "醋", category:"调味品", season: [], tips: "米醋或陈醋，配料简单。看总酸度≥3.5g/100ml为佳。开封后阴凉存放。" }
+    ]
   };
-}
 
-document.getElementById('upload').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = event => startAnalysis(event.target.result);
-  reader.readAsDataURL(file);
-});
+  const tabsDiv = document.getElementById('tabs');
+  const listDiv = document.getElementById('list');
+  const searchBox = document.getElementById('searchBox');
+  const currentMonth = new Date().getMonth() + 1;
+  let currentTab = '⭐收藏';
 
-function retryAnalysis() {
-  if (currentImageDataUrl) startAnalysis(currentImageDataUrl);
-}
+  let basket = JSON.parse(localStorage.getItem('foodBasket')) || [];
+  let favorites = JSON.parse(localStorage.getItem('foodFavorites')) || [];
+  const basketDiv = document.getElementById('basket');
+  const basketItemsDiv = document.getElementById('basketItems');
+  const basketCountSpan = document.getElementById('basketCount');
+  const balanceTipDiv = document.getElementById('balanceTip');
+  const clearBasketBtn = document.getElementById('clearBasket');
+  const basketToggle = document.getElementById('basketToggle');
+  const budgetToggle = document.getElementById('budgetToggle');
+  const budgetDetails = document.getElementById('budgetDetails');
 
-// ---------- 工具函数 ----------
-const toPixel = (lm, w, h) => ({x: lm.x * w, y: lm.y * h});
-const distance = (a,b) => Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2);
-const angleBetween = (v1,v2) => {
-  const dot = v1.x*v2.x + v1.y*v2.y;
-  const m1 = Math.sqrt(v1.x**2+v1.y**2), m2 = Math.sqrt(v2.x**2+v2.y**2);
-  if (!m1||!m2) return 0;
-  return Math.acos(dot/(m1*m2)) * 180 / Math.PI;
-};
-const distToLine = (p,p1,p2) => {
-  const num = Math.abs((p2.y-p1.y)*p.x - (p2.x-p1.x)*p.y + p2.x*p1.y - p2.y*p1.x);
-  const den = Math.sqrt((p2.y-p1.y)**2 + (p2.x-p1.x)**2);
-  return den? num/den : 0;
-};
-const contourStraightness = (pts, p1, p2) => {
-  const ds = pts.map(p=>distToLine(p,p1,p2));
-  if(!ds.length) return 0;
-  const mean = ds.reduce((a,b)=>a+b,0)/ds.length;
-  return Math.sqrt(ds.reduce((a,b)=>a+(b-mean)**2,0)/ds.length);
-};
-function fuzzyScore(value, low, high, higherIsWorse = true) {
-  if (higherIsWorse) {
-    if (value <= low) return 0;
-    if (value >= high) return 1;
-    return (value - low) / (high - low);
-  } else {
-    if (value >= low) return 0;
-    if (value <= high) return 1;
-    return (low - value) / (low - high);
-  }
-}
+  function isInSeason(arr) { return arr.includes(currentMonth); }
 
-// ---------- 核心分析 ----------
-function onResults(results) {
-  statusDiv.textContent = '';
-  if (!results.multiFaceLandmarks?.length) {
-    statusDiv.textContent = '未检测到人脸。请使用正面清晰照片。';
-    retryBtn.style.display = 'inline-block';
-    return;
-  }
-  retryBtn.style.display = 'none';
-
-  const lm = results.multiFaceLandmarks[0];
-  const w = imgElement.width, h = imgElement.height;
-
-  // ========== 关键点提取 ==========
-  const hairline = toPixel(lm[10],w,h);
-  const glabella = toPixel(lm[6],w,h);
-  const nasion = toPixel(lm[168],w,h);
-  const noseTip = toPixel(lm[1],w,h);
-  const noseBottom = toPixel(lm[2],w,h);
-  const chin = toPixel(lm[152],w,h);
-  const Lface = toPixel(lm[234],w,h), Rface = toPixel(lm[454],w,h);
-  const LeyeOut = toPixel(lm[33],w,h), LeyeIn = toPixel(lm[133],w,h);
-  const ReyeIn = toPixel(lm[362],w,h), ReyeOut = toPixel(lm[263],w,h);
-  const Ljaw = toPixel(lm[172],w,h), Rjaw = toPixel(lm[397],w,h);
-  const upLip = toPixel(lm[13],w,h), lowLip = toPixel(lm[14],w,h);
-  const upLipTop = toPixel(lm[0],w,h), lowLipBot = toPixel(lm[17],w,h);
-  const Lcanthus = toPixel(lm[133],w,h), Rcanthus = toPixel(lm[362],w,h);
-  const LupperLid = toPixel(lm[159],w,h), LlowerLid = toPixel(lm[145],w,h);
-  const RupperLid = toPixel(lm[386],w,h), RlowerLid = toPixel(lm[374],w,h);
-  const Lbrow = toPixel(lm[105],w,h), Rbrow = toPixel(lm[334],w,h);
-  const Lmouth = toPixel(lm[61],w,h), Rmouth = toPixel(lm[291],w,h);
-  const Lalar = toPixel(lm[64],w,h), Ralar = toPixel(lm[294],w,h);
-  const mento = toPixel(lm[200],w,h);
-  const Lcheek = toPixel(lm[101],w,h), Rcheek = toPixel(lm[330],w,h);
-  const noseBridgeMid = {x:(nasion.x+noseTip.x)/2, y:(nasion.y+noseTip.y)/2};
-
-  // ========== 基础值 ==========
-  const faceH = Math.abs(hairline.y - chin.y);
-  const faceW = Math.abs(Rface.x - Lface.x);
-  const noseLen = distance(nasion, noseTip);
-  const smileW = distance(Lmouth,Rmouth);
-  const smileH = distance(upLipTop, lowLipBot);
-  const smileRatio = smileH? smileW/smileH : 0;
-  const isSmiling = smileRatio > 0.38;
-
-  const upRatio = (Math.abs(glabella.y-hairline.y)/faceH*100);
-  const midRatio = (Math.abs(noseBottom.y-glabella.y)/faceH*100);
-  const lowRatio = (Math.abs(chin.y-noseBottom.y)/faceH*100);
-  const LeyeW = Math.abs(LeyeOut.x-LeyeIn.x);
-  const ReyeW = Math.abs(ReyeOut.x-ReyeIn.x);
-  const eyeSpace = Math.abs(ReyeIn.x-LeyeIn.x);
-  const idealEye = faceW/5;
-
-  const nasoAngle = angleBetween(
-    {x:nasion.x-glabella.x,y:nasion.y-glabella.y},
-    {x:noseTip.x-nasion.x,y:noseTip.y-nasion.y}
-  );
-  const jawL = angleBetween(
-    {x:Ljaw.x-Lface.x,y:Ljaw.y-Lface.y},
-    {x:chin.x-Ljaw.x,y:chin.y-Ljaw.y}
-  );
-  const jawR = angleBetween(
-    {x:Rjaw.x-Rface.x,y:Rjaw.y-Rface.y},
-    {x:chin.x-Rjaw.x,y:chin.y-Rjaw.y}
-  );
-  const jawAvg = (jawL+jawR)/2;
-
-  const eUp = (distToLine(upLip,noseTip,chin)/faceH);
-  const eLow = (distToLine(lowLip,noseTip,chin)/faceH);
-
-  const LcanAngle = angleBetween(
-    {x:LupperLid.x-Lcanthus.x,y:LupperLid.y-Lcanthus.y},
-    {x:LlowerLid.x-Lcanthus.x,y:LlowerLid.y-Lcanthus.y}
-  );
-  const RcanAngle = angleBetween(
-    {x:RupperLid.x-Rcanthus.x,y:RupperLid.y-Rcanthus.y},
-    {x:RlowerLid.x-Rcanthus.x,y:RlowerLid.y-Rcanthus.y}
-  );
-  const canthusAvg = (LcanAngle+RcanAngle)/2;
-
-  const nasoBridge = angleBetween(
-    {x:nasion.x-glabella.x,y:nasion.y-glabella.y},
-    {x:noseBridgeMid.x-nasion.x,y:noseBridgeMid.y-nasion.y}
-  );
-
-  const jawContourL = Array.from({length:9},(_,i)=>toPixel(lm[i],w,h));
-  const chinContour = toPixel(lm[8],w,h);
-  const jawStraightL = contourStraightness(jawContourL, toPixel(lm[0],w,h), chinContour);
-  const jawContourR = Array.from({length:8},(_,i)=>toPixel(lm[i+9],w,h));
-  const jawStraightR = contourStraightness(jawContourR, toPixel(lm[16],w,h), chinContour);
-  const jawStraightAvg = (jawStraightL+jawStraightR)/2;
-
-  // ========== 精细指标 ==========
-  const nasolabial = angleBetween(
-    {x:noseBottom.x-noseTip.x,y:noseBottom.y-noseTip.y},
-    {x:upLip.x-noseBottom.x,y:upLip.y-noseBottom.y}
-  );
-  const LcanthalTilt = (Math.atan2(LeyeOut.y-LeyeIn.y, LeyeOut.x-LeyeIn.x)*180/Math.PI);
-  const RcanthalTilt = (Math.atan2(ReyeOut.y-ReyeIn.y, ReyeOut.x-ReyeIn.x)*180/Math.PI);
-  const alarW = distance(Lalar,Ralar);
-  const intercanthal = distance(Lcanthus,Rcanthus);
-  const alarRatio = intercanthal ? (alarW/intercanthal) : 1;
-  const philtrum = distance(noseBottom, upLipTop);
-  const upLipThick = distance(upLipTop, upLip);
-  const philtrumRatio = upLipThick ? (philtrum/upLipThick) : 1.8;
-  const noseProj = distToLine(noseTip, nasion, noseBottom);
-  const noseProjRatio = noseLen ? (noseProj/noseLen) : 0.6;
-  const labiomental = angleBetween(
-    {x:lowLip.x-mento.x,y:lowLip.y-mento.y},
-    {x:chin.x-mento.x,y:chin.y-mento.y}
-  );
-  const LcheekProj = distToLine(Lcheek, noseTip, chin)/faceH;
-  const RcheekProj = distToLine(Rcheek, noseTip, chin)/faceH;
-  const cheekProjAvg = (LcheekProj+RcheekProj)/2;
-
-  // ========== 不对称性 ==========
-  const asymEyebrow = Math.abs(Lbrow.y - Rbrow.y);
-  const asymMouth = Math.abs(Lmouth.y - Rmouth.y);
-  const asymAlar = Math.abs(Lalar.y - Ralar.y);
-  const asymCanthus = Math.abs(Lcanthus.y - Rcanthus.y);
-  const asymThres = faceH * 0.012;
-  const asymTotal = (asymEyebrow + asymMouth + asymAlar + asymCanthus) / 4;
-  const isNaturalAsymmetry = (asymTotal > 0.5 && asymTotal < 1.5);
-
-  // ========== 皮肤纹理 ==========
-  let skinTextureScore = null;
-  if (Lcheek && Rcheek) {
-    const regionSize = 20;
-    const regions = [Lcheek, Rcheek];
-    let totalVar = 0, vCnt = 0;
-    const offCanvas = document.createElement('canvas');
-    offCanvas.width = w; offCanvas.height = h;
-    const offCtx = offCanvas.getContext('2d');
-    offCtx.drawImage(imgElement,0,0,w,h);
-    regions.forEach(p => {
-      const x = Math.round(p.x - regionSize/2), y = Math.round(p.y - regionSize/2);
-      if(x<0||y<0||x+regionSize>w||y+regionSize>h) return;
-      const imgData = offCtx.getImageData(x,y,regionSize,regionSize);
-      const gray = [];
-      for(let i=0;i<imgData.data.length;i+=4){
-        gray.push(imgData.data[i]*0.299+imgData.data[i+1]*0.587+imgData.data[i+2]*0.114);
+  // 构建标签，首先添加“收藏”标签
+  const allCategories = ['⭐收藏', ...Object.keys(data)];
+  allCategories.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'tab';
+    if (cat === currentTab) btn.classList.add('active');
+    if (cat === '⭐收藏') btn.classList.add('fav-tab');
+    btn.textContent = cat;
+    btn.addEventListener('click', () => {
+      currentTab = cat;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      searchBox.value = '';
+      if (cat === '⭐收藏') {
+        renderFavorites();
+      } else {
+        render(data[cat]);
       }
-      const mean = gray.reduce((a,b)=>a+b,0)/gray.length;
-      totalVar += gray.reduce((a,b)=>a+(b-mean)**2,0)/gray.length;
-      vCnt++;
     });
-    if(vCnt) {
-      const varianceAvg = totalVar/vCnt;
-      skinTextureScore = Math.min(100, Math.max(0, (varianceAvg - 20) * 1.2));
+    tabsDiv.appendChild(btn);
+  });
+
+  function renderFavorites() {
+    const favItems = [];
+    // 从所有分类中收集被收藏的食材
+    Object.keys(data).forEach(cat => {
+      data[cat].forEach(item => {
+        if (favorites.includes(item.name)) {
+          favItems.push(item);
+        }
+      });
+    });
+    if (favItems.length === 0) {
+      listDiv.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">⭐ 你还没有收藏食材，点击食材右上角的星星添加常用食材</div>';
+    } else {
+      render(favItems);
     }
   }
-  const isTextureNatural = skinTextureScore !== null && skinTextureScore > 45;
-  const isTextureVeryNatural = skinTextureScore !== null && skinTextureScore > 65;
 
-  // ========== 美颜干扰度 ==========
-  const faceVScore = fuzzyScore(faceW / faceH, 0.75, 0.66, false);
-  const eyeToFace = (LeyeW + ReyeW) / faceW;
-  const eyeEnlargedScore = fuzzyScore(eyeToFace, 0.45, 0.55, true);
-  const blurScore = skinTextureScore !== null ? fuzzyScore(skinTextureScore, 30, 15, false) : 0;
-  const contourSharpness = fuzzyScore(jawStraightAvg, 5.5, 3.5, false);
-  const beautyDisturb = (faceVScore * 0.3 + eyeEnlargedScore * 0.25 + blurScore * 0.30 + contourSharpness * 0.15);
-
-  // ========== 模糊评分（阈值后移） ==========
-  const scores = {};
-  scores.nasoAngle = fuzzyScore(nasoAngle, 155, 165, true);
-  scores.labiomental = fuzzyScore(labiomental, 155, 165, true);
-  scores.noseProjRatio = fuzzyScore(noseProjRatio, 0.70, 0.80, true);
-  scores.canthusAvg = fuzzyScore(canthusAvg, 65, 75, true);
-  scores.alarRatioHigh = fuzzyScore(alarRatio, 1.15, 1.25, true);
-  scores.alarRatioLow = fuzzyScore(alarRatio, 0.90, 0.80, false);
-  scores.alarRatio = Math.max(scores.alarRatioHigh, scores.alarRatioLow);
-  scores.jawStraight = fuzzyScore(jawStraightAvg, 4.0, 3.0, false);
-  scores.jawAngle = fuzzyScore(jawAvg, 140, 150, true);
-
-  scores.nasolabial = Math.max(
-    fuzzyScore(nasolabial, 115, 125, true),
-    fuzzyScore(nasolabial, 85, 75, false)
-  );
-  scores.Eline = (!isSmiling) ? Math.max(
-    fuzzyScore(Math.abs(eUp), 0.020, 0.030, true),
-    fuzzyScore(Math.abs(eLow), 0.020, 0.030, true)
-  ) : 0;
-  scores.philtrumRatio = Math.max(
-    fuzzyScore(philtrumRatio, 1.4, 1.2, false),
-    fuzzyScore(philtrumRatio, 2.4, 2.6, true)
-  );
-  scores.cheekProj = fuzzyScore(cheekProjAvg, 0.18, 0.22, true);
-  scores.tiltDiff = fuzzyScore(Math.abs(LcanthalTilt - RcanthalTilt), 5, 8, true);
-  scores.jawAngleB = fuzzyScore(jawAvg, 135, 145, true);
-
-  const aScore = 
-    (scores.nasoAngle * 2 + scores.labiomental * 2 + scores.noseProjRatio * 2 +
-    scores.canthusAvg * 2 + scores.alarRatio * 1.5 + scores.jawStraight * 1.5 + scores.jawAngle * 1.5) * 0.8;
-  const bScore = 
-    scores.nasolabial * 1 + scores.Eline * 1 + scores.philtrumRatio * 1 +
-    scores.cheekProj * 1 + scores.tiltDiff * 1 + scores.jawAngleB * 0.5;
-  const asymScoreCont = (fuzzyScore(asymEyebrow, asymThres, asymThres*1.5, true) +
-    fuzzyScore(asymMouth, asymThres, asymThres*1.5, true) +
-    fuzzyScore(asymAlar, asymThres, asymThres*1.5, true) +
-    fuzzyScore(asymCanthus, asymThres, asymThres*1.5, true)) / 4;
-  let rawTotal = aScore + bScore + asymScoreCont * 1.5;
-
-  // ---------- 🌿 自然感证据 ----------
-  let naturalBonus = 0;
-  if (isTextureVeryNatural) naturalBonus += 3.0;
-  else if (isTextureNatural) naturalBonus += 2.0;
-  else if (skinTextureScore !== null && skinTextureScore > 30) naturalBonus += 0.8;
-  if (isNaturalAsymmetry) naturalBonus += 1.2;
-  const jawNaturalScore = fuzzyScore(jawStraightAvg, 3.5, 5.0, true);
-  naturalBonus += jawNaturalScore * 1.0;
-  if ((nasoAngle > 150 || labiomental > 150) && jawAvg < 140) {
-    naturalBonus += 1.5;
-  }
-  if (isSmiling) naturalBonus += 0.4;
-
-  if (asymTotal < 0.5 && !isTextureNatural) {
-    rawTotal += 0.3;
-  }
-
-  const effectiveNaturalBonus = naturalBonus * (1 - beautyDisturb * 0.5);
-  const finalScore = Math.max(0, rawTotal - effectiveNaturalBonus);
-
-  const baseHighThreshold = 5.5;
-  const effectiveHighThreshold = baseHighThreshold + beautyDisturb * 2.0;
-  let grade = '', gradeColor = '';
-  if (finalScore >= effectiveHighThreshold) {
-    grade = '🔴 高度整容脸';
-    gradeColor = '#d9534f';
-  } else if (finalScore >= 3.0) {
-    grade = '🟡 微整容脸';
-    gradeColor = '#f0ad4e';
-  } else if (finalScore >= 1.5) {
-    grade = '🔵 可疑人工痕迹';
-    gradeColor = '#5bc0de';
-  } else {
-    grade = '🟢 天然脸';
-    gradeColor = '#5cb85c';
-  }
-
-  const confidenceLevel = (beautyDisturb > 0.7) ? '低' :
-    (beautyDisturb > 0.4 || (finalScore > 2.2 && finalScore < 3.8)) ? '中' : '高';
-
-  let beautyWarning = '';
-  if (beautyDisturb > 0.6) beautyWarning = '⚠️ 重度美颜干扰，结果可信度低。';
-  else if (beautyDisturb > 0.3) beautyWarning = '🔍 存在一定美颜痕迹，结论仅供参考。';
-
-  let natureTip = '';
-  if (effectiveNaturalBonus > 2.0) {
-    natureTip = '🌿 面部保留显著天然特征，天然可能性很高。';
-  }
-
-  // ========== 绘制 ==========
-  canvas.width = w; canvas.height = h;
-  ctx.drawImage(imgElement,0,0,w,h);
-  const dp = (p,color='lime',r=3) => { ctx.beginPath(); ctx.arc(p.x,p.y,r,0,2*Math.PI); ctx.fillStyle=color; ctx.fill(); };
-  const dl = (p1,p2,color='cyan') => { ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.strokeStyle=color; ctx.lineWidth=2; ctx.stroke(); };
-  dp(hairline,'yellow');dp(glabella,'yellow');dp(noseBottom,'yellow');dp(chin,'yellow');dl(hairline,chin,'yellow');
-  dp(nasion,'red');dp(noseTip,'red');dp(Ljaw,'orange');dp(Rjaw,'orange');
-  dl(glabella,nasion,'white');dl(nasion,noseTip,'white');
-  dl(Lface,Ljaw,'orange');dl(Ljaw,chin,'orange');dl(noseTip,chin,'magenta');
-  dp(upLip,'cyan');dp(lowLip,'cyan');
-  dp(Lcanthus,'aqua');dp(Rcanthus,'aqua');
-  dp(mento,'violet',4);dl(lowLip,mento,'violet');dl(mento,chin,'violet');
-  canvas.style.display='block'; preview.style.display='none';
-
-  // ========== 报告 ==========
-  const confidenceTag = `<span class="confidence-tag" style="background:${confidenceLevel==='高'?'#d4edda':confidenceLevel==='中'?'#fff3cd':'#f8d7da'};color:${confidenceLevel==='高'?'#155724':confidenceLevel==='中'?'#856404':'#721c24'}">置信度: ${confidenceLevel}</span>`;
-  let report = `<div class="grade-box" style="background:${gradeColor}20;color:${gradeColor};">${grade} ${confidenceTag}</div>`;
-  if (beautyWarning) report += `<div class="beauty-warn">${beautyWarning}</div>`;
-  if (natureTip) report += `<div class="natural-tip">${natureTip}</div>`;
-  report += `【表情】${isSmiling?'😊微笑':'😐自然'} (唇比例${smileRatio.toFixed(3)})\n\n`;
-  report += `📐 基础比例\n三庭：上${upRatio.toFixed(1)}% 中${midRatio.toFixed(1)}% 下${lowRatio.toFixed(1)}%  五眼：左${LeyeW.toFixed(1)} 右${ReyeW.toFixed(1)} 眼距${eyeSpace.toFixed(1)}\n\n`;
-  report += `🦴 骨骼嫌疑 (阈值155°起)\n`;
-  report += `鼻额角 ${nasoAngle.toFixed(1)}° (${scores.nasoAngle.toFixed(2)})  颏唇沟 ${labiomental.toFixed(1)}° (${scores.labiomental.toFixed(2)})  鼻尖突度比 ${noseProjRatio.toFixed(2)}\n`;
-  report += `内眼角 ${canthusAvg.toFixed(1)}°  鼻翼比 ${alarRatio.toFixed(2)}  下颌角 ${jawAvg.toFixed(1)}°  下颌平滑 ${jawStraightAvg.toFixed(1)}px\n\n`;
-  report += `🌿 自然感证据\n纹理: ${skinTextureScore!==null?skinTextureScore.toFixed(0)+'/100':'无'} (${isTextureVeryNatural?'极自然':isTextureNatural?'自然':'平滑'})\n`;
-  report += `不对称: ${asymTotal.toFixed(1)}px (${isNaturalAsymmetry?'天然轻微':'对称'})\n`;
-  report += `骨相协调奖励: ${(nasoAngle>150||labiomental>150)&&jawAvg<140?'是 (立体天然)':'无'}\n`;
-  report += `自然奖励总分: ${effectiveNaturalBonus.toFixed(1)}\n\n`;
-  report += `🎭 美颜干扰度: ${(beautyDisturb*100).toFixed(0)}%\n`;
-  report += `⚖️ 原始嫌疑: ${rawTotal.toFixed(1)} - 自然抵扣 ${effectiveNaturalBonus.toFixed(1)} = 最终分 ${finalScore.toFixed(1)} (高整门槛 ${effectiveHighThreshold.toFixed(1)})\n`;
-  report += `\n⚠️ 仅供娱乐参考。`;
-
-  resultDiv.innerHTML = report;
-  resultDiv.style.display = 'block';
-}
-</script>
-<!-- 注册基础 Service Worker，实现离线缓存及安装支持 -->
-<script>
-if ('serviceWorker' in navigator) {
-  const swCode = `
-    const CACHE_NAME = 'face-analysis-v6.2';
-    const urlsToCache = [
-      '/',
-      'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js'
-    ];
-    self.addEventListener('install', event => {
-      event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
-      );
-      self.skipWaiting();
+  function render(items) {
+    listDiv.innerHTML = '';
+    items.forEach(item => {
+      const seasonal = item.season && item.season.length ? isInSeason(item.season) : false;
+      const showOffSeason = item.category !== '蔬菜' && item.season && item.season.length && !seasonal;
+      const highRisk = item.highRisk || false;
+      const isFaved = favorites.includes(item.name);
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="card-content">
+          <div class="card-title">
+            ${item.name}
+            ${seasonal ? '<span class="season-badge">🌱当季</span>' : ''}
+            ${showOffSeason ? '<span class="off-season-badge">🍂过季</span>' : ''}
+            ${highRisk ? '<span class="warn-badge">⚠️避坑</span>' : ''}
+          </div>
+          <div class="card-tips">${item.tips}</div>
+          ${highRisk ? `<div class="warning-box">${item.warnTips}</div>` : ''}
+        </div>
+        <div class="card-actions">
+          <button class="fav-btn ${isFaved ? 'faved' : ''}" data-name="${item.name}">${isFaved ? '⭐' : '☆'}</button>
+          <button class="add-btn">＋</button>
+        </div>
+      `;
+      // 展开/收起详情
+      card.querySelector('.card-content').addEventListener('click', () => card.classList.toggle('open'));
+      // 收藏按钮
+      card.querySelector('.fav-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleFavorite(item.name);
+      });
+      // 加入菜篮子按钮
+      card.querySelector('.add-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        addToBasket(item.name, item.category);
+      });
+      listDiv.appendChild(card);
     });
-    self.addEventListener('activate', event => {
-      event.waitUntil(clients.claim());
+  }
+
+  function toggleFavorite(name) {
+    if (favorites.includes(name)) {
+      favorites = favorites.filter(f => f !== name);
+    } else {
+      favorites.push(name);
+    }
+    localStorage.setItem('foodFavorites', JSON.stringify(favorites));
+    // 重新渲染当前视图
+    if (currentTab === '⭐收藏') {
+      renderFavorites();
+    } else {
+      render(data[currentTab]);
+    }
+  }
+
+  function addToBasket(name, category) {
+    basket.push({ name, category });
+    saveBasket();
+    renderBasket();
+  }
+
+  function removeFromBasket(index) {
+    basket.splice(index, 1);
+    saveBasket();
+    renderBasket();
+  }
+
+  function clearBasket() { basket = []; saveBasket(); renderBasket(); }
+  function saveBasket() { localStorage.setItem('foodBasket', JSON.stringify(basket)); }
+
+  function renderBasket() {
+    if (basket.length === 0) basketDiv.classList.add('hidden');
+    else basketDiv.classList.remove('hidden');
+    basketCountSpan.textContent = basket.length;
+    basketItemsDiv.innerHTML = '';
+    basket.forEach((item, index) => {
+      const tag = document.createElement('span');
+      tag.className = 'basket-item';
+      tag.innerHTML = `${item.name} <button class="remove" data-index="${index}">✕</button>`;
+      tag.querySelector('.remove').addEventListener('click', () => removeFromBasket(index));
+      basketItemsDiv.appendChild(tag);
     });
-    self.addEventListener('fetch', event => {
-      event.respondWith(
-        caches.match(event.request).then(response => response || fetch(event.request))
-      );
+
+    const categoryCount = {};
+    basket.forEach(item => {
+      categoryCount[item.category] = (categoryCount[item.category] || 0) + 1;
     });
-  `;
-  const blob = new Blob([swCode], { type: 'application/javascript' });
-  const swUrl = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl, { scope: '/' })
-    .catch(() => console.log('SW registration for PWA prompt failed, but app still works.'));
-}
+    let tip = '';
+    if (!categoryCount['蔬菜'] && !categoryCount['水果']) {
+      tip = '🥬 缺少蔬菜或水果，记得补充维生素和膳食纤维。';
+    } else if (!categoryCount['蔬菜']) {
+      tip = '🥬 缺少蔬菜，建议添加如西红柿、青菜等。';
+    } else if (!categoryCount['蛋白质']) {
+      tip = '🍳 缺少蛋白质，鸡蛋、肉类或豆腐能提供必需氨基酸。';
+    } else if (!categoryCount['主食/谷物']) {
+      tip = '🍚 缺少主食，搭配糙米、全麦面包或红薯提供能量。';
+    } else if (categoryCount['蔬菜'] && categoryCount['蛋白质'] && (categoryCount['主食/谷物'] || categoryCount['水果'])) {
+      tip = '✅ 搭配基本均衡，有蔬菜、蛋白质和主食，挺好的！';
+    } else {
+      tip = '🌱 篮子很丰富，继续均衡搭配。';
+    }
+    if (!categoryCount['调味品']) {
+      tip += ' 基础调味：别忘了大蒜和姜。';
+    }
+    balanceTipDiv.textContent = tip;
+  }
+
+  budgetToggle.addEventListener('click', () => {
+    budgetDetails.classList.toggle('open');
+    const arrow = budgetToggle.querySelector('span:last-child');
+    arrow.textContent = budgetDetails.classList.contains('open') ? '▲' : '▼';
+  });
+
+  searchBox.addEventListener('input', () => {
+    const kw = searchBox.value.trim().toLowerCase();
+    if (!kw) {
+      if (currentTab === '⭐收藏') renderFavorites();
+      else render(data[currentTab]);
+      return;
+    }
+    const results = [];
+    Object.keys(data).forEach(cat => {
+      data[cat].forEach(item => {
+        if (item.name.toLowerCase().includes(kw)) results.push(item);
+      });
+    });
+    render(results);
+  });
+
+  clearBasketBtn.addEventListener('click', clearBasket);
+  basketToggle.addEventListener('click', () => {
+    const isHidden = basketItemsDiv.style.display === 'none';
+    basketItemsDiv.style.display = isHidden ? 'flex' : 'none';
+    balanceTipDiv.style.display = isHidden ? 'block' : 'none';
+  });
+
+  // 初始渲染收藏页
+  renderFavorites();
+
+  if ('serviceWorker' in navigator) {
+    const swCode = `const C='diet-fav-v1';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['/'])));self.skipWaiting();});self.addEventListener('activate',e=>e.waitUntil(clients.claim()));self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});`;
+    const blob = new Blob([swCode], { type: 'application/javascript' });
+    navigator.serviceWorker.register(URL.createObjectURL(blob), { scope: '/' });
+  }
 </script>
 </body>
 </html>
